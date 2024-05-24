@@ -1,0 +1,20 @@
+{
+    "pacs": {
+        "ip": "SET IP",
+        "port": -1,
+        "aet": "SET AET",
+        "local_aet": "SET LOCAL AET"
+    },
+    "database": {
+        "host": "HOSTNAME",
+        "user": "USERNAME",
+        "password": "PASS",
+        "port": -1,
+        "schema": "SCHEMA",
+        "dbname": "DATABASE NAME"
+    },
+    "path": {
+        "compressed": "/path/to/compressed/",
+        "download": "/path/to/downloads/"
+    }
+}
