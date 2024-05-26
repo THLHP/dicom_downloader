@@ -1,3 +1,4 @@
 .snakemake/
 manual/
 automate/config.json
+*.csv
