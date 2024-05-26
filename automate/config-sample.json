@@ -16,5 +16,6 @@
     "path": {
         "compressed": "/path/to/compressed/",
         "download": "/path/to/downloads/"
-    }
+    },
+    "delimiter": "__seriesCount"
 }
