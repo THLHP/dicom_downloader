@@ -29,6 +29,9 @@ This means if the patient `AA-BB-CC` currently has 7 series then the zip file wo
 * `automate/07_dicom_inventory_generator.py` - Creates a CSV file of all series, studies, patients in the database. 
 
 ## Automation
+
+![CT Scans flow diagram](images/automation_diagram.drawio.png)
+
 Use `crontab -e` to schedule the scripts. Sample bash driver files are provided in the `automate` directory with optional heartbeat integeration. The badges at top of this readme provide current status of the automations. 
 * `pacs_to_thlhp_db_postgresql` - Status of scripts 01-03
 * `dicoms_pacs_to_chile` - Status of script 04
