@@ -12,7 +12,7 @@ with open('config.json', 'r') as f:
 db_credentials = credentials['database']
 
 # Define the local storage directory
-storage_dir = credentials['path']['downloads']
+storage_dir = credentials['path']['download']
 
 # PostgreSQL connection
 conn = psycopg2.connect(
@@ -55,9 +55,10 @@ cur.execute("""
     FROM fieldsite.series s
     JOIN fieldsite.studies st ON s.studyid = st.studyid
     JOIN fieldsite.patients p ON st.patient_id = p.patient_id
-    WHERE s.download_status = 'complete'
+    WHERE s.download_status = 'complete' and (s.validation = '' OR s.validation is NULL)
     GROUP BY p.patient_id, s.seriesdescription
 """)
+
 series_list = cur.fetchall()
 
 missing_slices_report = []
@@ -78,7 +79,7 @@ with tqdm(total=len(series_list), desc="Checking series", unit="series") as pbar
 
         downloaded_num_images = get_downloaded_images_count(series_dir)
 
-        if downloaded_num_images != expected_num_images:
+        if downloaded_num_images < expected_num_images:
             missing_slices_report.append({
                 "patient_id": patient_id,
                 "series_name": series_name,

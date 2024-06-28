@@ -63,6 +63,19 @@ for studyinstanceuid, studyid in tqdm(study_map.items(), desc="Querying series f
     ds.SeriesDescription = ''
     ds.BodyPartExamined = ''
     ds.NumberOfSeriesRelatedInstances = ''
+    ds.add_new((0x0040, 0x0310), 'ST', '')
+    ds.add_new((0x0018, 0x1210), 'SH', '')
+    ds.add_new((0x0018, 0x1030), 'LO', '')
+    ds.add_new((0x0018, 0x0050), 'DS', '')
+    ds.add_new((0x0054, 0x0081), 'US', '')
+    ds.add_new((0x0018, 0x0088), 'DS', '')
+    ds.add_new((0x0018, 0x0060), 'DS', '')
+    ds.add_new((0x0018, 0x7005), 'CS', '')
+    ds.add_new((0x1092, 0x7005), 'CS', '')
+    ds.add_new((0x100B, 0x7005), 'CS', '')
+    ds.add_new((0x0010, 0x4000), 'LT', '')
+    ds.add_new((0x0018, 0x0022), 'CS', '')
+    ds.add_new((0x1011, 0x7005), 'UN', '')
 
     # Perform the association with the PACS
     assoc = ae.associate(PACS_IP, PACS_PORT, ae_title=PACS_AET)
@@ -83,6 +96,19 @@ for studyinstanceuid, studyid in tqdm(study_map.items(), desc="Querying series f
                 number_of_images = identifier.NumberOfSeriesRelatedInstances if 'NumberOfSeriesRelatedInstances' in identifier else None
                 series_date = identifier.SeriesDate if 'SeriesDate' in identifier else None
                 series_time = identifier.SeriesTime if 'SeriesTime' in identifier else None
+                comments_on_radiation_dose = identifier[(0x0040, 0x0310)].value if (0x0040, 0x0310) in identifier else None
+                convolution_kernel = identifier[(0x0018, 0x1210)].value if (0x0018, 0x1210) in identifier else None
+                protocol_name = identifier[(0x0018, 0x1030)].value if (0x0018, 0x1030) in identifier else None
+                slice_thickness = identifier[(0x0018, 0x0050)].value if (0x0018, 0x0050) in identifier else None
+                number_of_slices = identifier[(0x0054, 0x0081)].value if (0x0054, 0x0081) in identifier else None
+                spacing_between_slices = identifier[(0x0018, 0x0088)].value if (0x0018, 0x0088) in identifier else None
+                kvp = identifier[(0x0018, 0x0060)].value if (0x0018, 0x0060) in identifier else None
+                detector_configuration = identifier[(0x0018, 0x7005)].value if (0x0018, 0x7005) in identifier else None
+                aice = identifier[(0x1092, 0x7005)].value if (0x1092, 0x7005) in identifier else None
+                aidr_3d_estd = identifier[(0x100B, 0x7005)].value if (0x100B, 0x7005) in identifier else None
+                patient_comments = identifier[(0x0010, 0x4000)].value if (0x0010, 0x4000) in identifier else None
+                scan_options = identifier[(0x0018, 0x0022)].value if (0x0018, 0x0022) in identifier else None
+                vol = identifier[(0x1011, 0x7005)].value if (0x1011, 0x7005) in identifier else None
 
                 if series_date and series_time:
                     series_datetime = f"{series_date} {series_time}"
@@ -97,7 +123,10 @@ for studyinstanceuid, studyid in tqdm(study_map.items(), desc="Querying series f
                     series_data.append(
                         (studyid, series_instance_uid, series_datetime, series_number, modality,
                          institution_name, institutional_department_name, series_description,
-                         body_part_examined, number_of_images)
+                         body_part_examined, number_of_images, comments_on_radiation_dose,
+                         convolution_kernel, protocol_name, slice_thickness, number_of_slices,
+                         spacing_between_slices, kvp, detector_configuration, aice, aidr_3d_estd,
+                         patient_comments, scan_options, vol)
                     )
 
         # Release the association
@@ -110,7 +139,10 @@ if series_data:
     insert_query = """
         INSERT INTO fieldsite.series (studyid, seriesinstanceuid, series_datetime, seriesnumber, modality,
                                       institutionname, institutionaldepartmentname, seriesdescription,
-                                      bodypartexamined, numberofimages)
+                                      bodypartexamined, numberofimages, comments_on_radiation_dose, 
+                                      convolution_kernel, protocol_name, slice_thickness, number_of_slices, 
+                                      spacing_between_slices, kvp, detector_configuration, aice, 
+                                      aidr_3d_estd, patient_comments, scan_options, vol)
         VALUES %s
         ON CONFLICT (seriesinstanceuid) DO UPDATE
         SET studyid = EXCLUDED.studyid,
@@ -122,6 +154,19 @@ if series_data:
             seriesdescription = EXCLUDED.seriesdescription,
             bodypartexamined = EXCLUDED.bodypartexamined,
             numberofimages = EXCLUDED.numberofimages,
+            comments_on_radiation_dose = EXCLUDED.comments_on_radiation_dose,
+            convolution_kernel = EXCLUDED.convolution_kernel,
+            protocol_name = EXCLUDED.protocol_name,
+            slice_thickness = EXCLUDED.slice_thickness,
+            number_of_slices = EXCLUDED.number_of_slices,
+            spacing_between_slices = EXCLUDED.spacing_between_slices,
+            kvp = EXCLUDED.kvp,
+            detector_configuration = EXCLUDED.detector_configuration,
+            aice = EXCLUDED.aice,
+            aidr_3d_estd = EXCLUDED.aidr_3d_estd,
+            patient_comments = EXCLUDED.patient_comments,
+            scan_options = EXCLUDED.scan_options,
+            vol = EXCLUDED.vol,
             date_modified = CURRENT_TIMESTAMP;
     """
     extras.execute_values(cur, insert_query, series_data)
