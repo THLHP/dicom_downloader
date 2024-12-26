@@ -92,7 +92,7 @@ storage_sop_classes = [CTImageStorage, MRImageStorage, SecondaryCaptureImageStor
 roles = [build_role(sop_class, scp_role=True) for sop_class in storage_sop_classes]
 
 # Function to download series data for a given series instance UID
-def download_series(ae, pacs_address, pacs_port, called_aet, local_aet, patient_id, study_instance_uid, series_instance_uid, series_name, max_retries=10, wait_time=30):
+def download_series(ae, pacs_address, pacs_port, called_aet, local_aet, patient_id, study_instance_uid, series_instance_uid, series_name, max_retries=20, wait_time=30):
     # Define the query dataset
     ds = Dataset()
     ds.QueryRetrieveLevel = 'SERIES'
@@ -158,7 +158,7 @@ while True:
     cur.execute("""
         SELECT s.seriesinstanceuid, s.seriesdescription, p.patient_id, st.studyinstanceuid, s.numberofimages
         FROM fieldsite.series s
-        JOIN fieldsite.studies st ON s.studyid = st.studyid
+        JOIN fieldsite.studies st ON s.studyinstanceuid = st.studyinstanceuid
         JOIN fieldsite.patients p ON st.patient_id = p.patient_id
         WHERE s.download_status IS NULL OR s.download_status = ''
         LIMIT 1

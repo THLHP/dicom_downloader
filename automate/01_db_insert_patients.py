@@ -18,6 +18,13 @@ config_path = os.path.join(self_dir, "config.json")
 def detect_thlhp_patient(patient):
     if len(patient_id) > 5 and patient_id[4] == '-' and int(patient_id[:4]) < 5000:
         return True
+    if patient_id == '999999-002':
+        print("Adding 999999-002 for phantom scans")
+        return True
+    if patient_id == '266-QHK-VW3N':
+        print("Adding 266-QHK-VW3N")
+        return True
+    # print(patient_id + " not added")
     return False
 
 # Load credentials

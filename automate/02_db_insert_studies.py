@@ -10,6 +10,7 @@ from pynetdicom.sop_class import (
     StudyRootQueryRetrieveInformationModelFind
 )
 from pydicom.dataset import Dataset
+import pandas as pd
 
 self_dir = os.path.dirname(os.path.realpath(__file__))
 config_path = os.path.join(self_dir, "config.json")
@@ -97,13 +98,19 @@ for patient_id in tqdm(patient_ids, desc="Querying studies for patients"):
     else:
         print(f"Association rejected, aborted or never connected for PatientID: {patient_id}")
 
+# Convert studies data to a DataFrame
+studies_df = pd.DataFrame(studies_data, columns=['StudyID', 'PatientID', 'StudyDatetime', 'StudyInstanceUID', 'AccessionNumber'])
+
+# Save DataFrame to CSV
+csv_file_path = os.path.join(self_dir, 'studies_data.csv')
+studies_df.to_csv(csv_file_path, index=False)
 
 # Insert studies data in batch
 if studies_data:
     insert_query = """
         INSERT INTO fieldsite.studies (studyid, patient_id, study_datetime, studyinstanceuid, accession_number)
         VALUES %s
-        ON CONFLICT (studyid) DO UPDATE
+        ON CONFLICT (studyinstanceuid) DO UPDATE
         SET patient_id = EXCLUDED.patient_id,
             study_datetime = EXCLUDED.study_datetime,
             studyinstanceuid = EXCLUDED.studyinstanceuid,

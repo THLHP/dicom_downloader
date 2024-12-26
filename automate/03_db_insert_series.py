@@ -126,7 +126,7 @@ for studyinstanceuid, studyid in tqdm(study_map.items(), desc="Querying series f
                          body_part_examined, number_of_images, comments_on_radiation_dose,
                          convolution_kernel, protocol_name, slice_thickness, number_of_slices,
                          spacing_between_slices, kvp, detector_configuration, aice, aidr_3d_estd,
-                         patient_comments, scan_options, vol)
+                         patient_comments, scan_options, vol, studyinstanceuid)
                     )
 
         # Release the association
@@ -142,7 +142,7 @@ if series_data:
                                       bodypartexamined, numberofimages, comments_on_radiation_dose, 
                                       convolution_kernel, protocol_name, slice_thickness, number_of_slices, 
                                       spacing_between_slices, kvp, detector_configuration, aice, 
-                                      aidr_3d_estd, patient_comments, scan_options, vol)
+                                      aidr_3d_estd, patient_comments, scan_options, vol, studyinstanceuid)
         VALUES %s
         ON CONFLICT (seriesinstanceuid) DO UPDATE
         SET studyid = EXCLUDED.studyid,
@@ -167,6 +167,7 @@ if series_data:
             patient_comments = EXCLUDED.patient_comments,
             scan_options = EXCLUDED.scan_options,
             vol = EXCLUDED.vol,
+            studyinstanceuid = EXCLUDED.studyinstanceuid,
             date_modified = CURRENT_TIMESTAMP;
     """
     extras.execute_values(cur, insert_query, series_data)
